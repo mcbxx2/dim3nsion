@@ -17,7 +17,10 @@
 
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
 	
-	<script type="text/javascript" src="jquery.canvasjs.min.js"></script>
+	<!--<script type="text/javascript" src="jquery.canvasjs.min.js"></script>-->
+	
+	<script type="text/javascript" src="dropzone.js"></script>
+	<link href="dropzone.css" type="text/css" rel="stylesheet" />
 	
 	<script src="main.js"></script>
   
@@ -45,6 +48,14 @@
 			<h2>
 				Home page goes here, empty implementation...
 			</h2>
+			<h2>
+				Drag and Drop to upload file
+			</h2>
+			<div id="dropIt"></div>
+			<form action="upload.php"
+				class="dropzone"
+				id="my-awesome-dropzone">
+			</form>
 		<div>
   </div>
 </body>

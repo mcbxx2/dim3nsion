@@ -4,6 +4,7 @@ app.controller('d3_controller', ['$window', '$scope', function($window, $scope) 
   
   $scope.load = function(){
 	  //execute something on load if need be
+	  $("div#dropIt").dropzone({ url: "/home/html/file_system/images/" });
   }
   
  
