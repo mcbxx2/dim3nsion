@@ -1,17 +1,22 @@
 <?php
 $ds          = DIRECTORY_SEPARATOR;  //1
  
-$storeFolder = 'images';//'/home/html/file_system/images/';   //2
+$storeFolder = '/home/html/file_system/images/';   //2
+ 
+openlog("myScriptLog", LOG_PID | LOG_PERROR, LOG_LOCAL0);
  
 if (!empty($_FILES)) {
      
     $tempFile = $_FILES['file']['tmp_name'];          //3             
       
-    $targetPath = dirname( __FILE__ ) . $ds. $storeFolder . $ds;  //4
-     
-    $targetFile =  $targetPath. $_FILES['file']['name'];  //5
+    $targetFile =  $storeFolder. $_FILES['file']['name'];  //5
+
+	syslog(LOG_ERR, $targetFile);
  
     move_uploaded_file($tempFile,$targetFile); //6
      
 }
+
+closelog();
+
 ?>  
