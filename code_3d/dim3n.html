@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+    </head>
+
+<body style="background-color:#d5daec">
+  <!--Load three.js-->
+
+    <img src="dim3nsion.png" width="280" height="70">
+   
+  <script src="http://threejs.org/build/three.min.js"></script>
+  <script src="../examples/js/loaders/OBJLoader.js"></script>
+
+
+  <div class="bd-pageheader">
+      <div class="container">
+        
+  <h2>Welcome to dim3nsion</h2>
+  <p class="lead">
+    A site created to render 3d images from any RGBD images.
+  </p>
+  <p class="lead">
+    This site was created by Mizzou Capstone team: 2001: A Capstone Odyssey
+  </p>
+
+      </div>
+      </div>
+      
+      
+  <script>
+      var scene    = new THREE.Scene();
+      var camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      var renderer = new THREE.WebGLRenderer();
+      
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0xd5daec);
+      //document.body.appendChild(renderer.domElement);
+
+      
+          // (width, height, depth)
+          var geometry = new THREE.BoxGeometry(5, 5, 5);
+          var material = new THREE.MeshLambertMaterial({color: 0x586181}) 
+          var mesh = new THREE.Mesh(geometry, material)
+          //scene.add(mesh);
+    
+
+      // (color, intensity)
+      var light = new THREE.PointLight(0xffffff, 1.2);
+      // (x, y, z)
+      light.position.set(0, 0, 6);
+      scene.add(light);
+
+      // move the camera back
+      camera.position.z = 10;
+      
+      init();
+      animate();
+      
+      function init() {
+          
+            container = document.createElement( 'div' );
+			document.body.appendChild( container );
+
+            scene = new THREE.Scene();
+            
+            scene.add( new THREE.AmbientLight( 0x999999 ) );
+
+            var pointLight = new THREE.PointLight( 0xffffff, 0.6 );
+            pointLight.position.set( 80, 90, 150 );
+            scene.add( pointLight );
+
+            camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 500 );
+
+            // Z is up for objects intended to be 3D printed.
+
+            camera.up.set( 0, 0, 1 );
+            camera.position.set( -80, -90, 150 );
+
+            //camera.add( new THREE.PointLight( 0xffffff, 0.8 ) );
+
+            scene.add( camera );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor( 0x333333 );
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            //container.appendChild( renderer.domElement );
+
+          
+          ////////
+          //MAKE IT WORK
+          // texture
+
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+
+					console.log( item, loaded, total );
+
+				};
+
+				var texture = new THREE.Texture();
+          
+          var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+          
+          var onError = function ( xhr ) {
+				};
+          ///////
+			// model
+
+            var loader = new THREE.OBJLoader( manager );
+            loader.load( 'bunny.obj', function ( object ) {
+
+                
+
+                object.position.y = - 95;
+                scene.add( object );
+
+            }, onProgress, onError );
+
+				//
+            renderer = new THREE.WebGLRenderer();
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            container.appendChild( renderer.domElement );
+
+          
+                
+      }
+          
+          
+      function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+      function render(){
+        //requestAnimationFrame(render);
+
+        //creates rotation ----
+        //mesh.rotation.x += 0.005;
+        //mesh.rotation.y += 0.005;
+
+          
+          camera.lookAt( scene.position );
+
+        renderer.render(scene, camera);
+      }
+      
+     
+      
+      //initializes scene
+      render();
+  </script>
+  
+</body>
+</html>

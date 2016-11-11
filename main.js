@@ -74,4 +74,64 @@ app.controller('d3_controller', ['$window', '$scope', function($window, $scope) 
 	  return age / millisInDay;
   }
   
+$scope.homeTab = true;
+    $scope.contactTab = false;
+    $scope.aboutTab = false;
+    $scope.view3dTab = false;
+    $scope.loginTab = false;
+    $scope.adminTab = false;
+ 
+    /**
+    * Handles navigation bar pagination
+    *
+    * @param tab
+    *        the tab to switch to
+    */
+    $scope.navigation = function(tab){
+        $("#home").removeClass("active");
+        $("#contact").removeClass("active");
+        $("#about").removeClass("active");
+        $("#view3d").removeClass("active");
+        $("#login").removeClass("active");
+        $("#administration").removeClass("active");
+        $scope.homeTab = false;
+        $scope.contactTab = false;
+        $scope.aboutTab = false;
+        $scope.view3dTab = false;
+        $scope.loginTab = false;
+        $scope.adminTab = false;
+
+        switch(tab){
+            case "home":
+                //home
+                $("#home").addClass("active");
+                $scope.homeTab = true;
+                break;
+            case "about":
+                //about
+                $("#about").addClass("active");
+                $scope.contactTab = true;
+                break;
+            case "contact":
+                //contact
+                $("#contact").addClass("active");
+                $scope.aboutTab = true;
+                break;
+            case "view3d":
+                //view
+                $("#view3d").addClass("active");
+                $scope.view3dTab = true;
+                break;
+            case "login":
+                //login
+                $("#login").addClass("active");
+                $scope.loginTab = true;
+                break;
+            case "admin":
+                //admin
+                $("#administration").addClass("active");
+                $scope.adminTab = true;
+                break;
+        }
+    }
 }]);

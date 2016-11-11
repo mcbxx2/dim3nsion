@@ -23,7 +23,73 @@
 	<link href="dropzone.css" type="text/css" rel="stylesheet" />
 	
 	<script src="main.js"></script>
+    
+    <script src="/sugar669/dim3nsion/code_3d/build/three.js"></script>
+    <script src="/sugar669/dim3nsion/code_3d/examples/js/loaders/OBJLoader.js"></script>
+    <script src='/sugar669/dim3nsion/code_3d/examples/js/controls/OrbitControls.js'></script>
   
+    <style>
+			body {
+				font-family: Monospace;
+				background-color: #d5daec;
+				color: #61443e;
+				margin: 0px;
+				overflow: hidden;
+			}
+            
+            #viewport {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+			}
+            
+            /* The Modal (background) */
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1; /* Sit on top */
+                padding-top: 100px; /* Location of the box */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgb(0,0,0); /* Fallback color */
+                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+
+            /* Modal Content */
+            .modal-content {
+                background-color: #fefefe;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+            }
+
+            /* The Close Button */
+            .close {
+                color: #aaaaaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            
+            /*button properties*/
+            button{
+                margin:auto;
+                display:block;
+            }
+			
+		</style>
+    
 </head>
 
 <body ng-app="dim3nsion">
@@ -36,26 +102,240 @@
 		  <h3 class="pull-left"><b>DIM3NSION</b></h3>
 		  <div class="pull-right">
 			<ul class="nav nav-pills pull-right">
-				<li role="presentation" class="active" id="home"><a href="#">Home</a></li>
-				<li role="presentation" id="contact"><a href="#">Contact</a></li>
-				<li role="presentation" id="about"><a href="#">About</a></li>
-				<li role="presentation" id="administration"><a href="#">Administration</a></li>
+				<li role="presentation" class="active" id="home" ng-click="navigation('home')"><a href="#">Home</a></li>
+				<li role="presentation" id="contact"><a href="#" ng-click="navigation('contact')">Contact</a></li>
+				<li role="presentation" id="about"><a href="#" ng-click="navigation('about')">About</a></li>
+                <li role="presentation" id="view3d" ng-click="navigation('view3d')"><a href="#">View 3d Model</a></li>
+				<li role="presentation" id="administration" ng-click="navigation('admin')"><a href="#">Administration</a></li>
+                <li role="presentation" id="login" ng-click="navigation('login')"><a href="#">Login</a></li>
 			</ul>
 		  </div>
 		</nav>
 
-		<div>
+		<div ng-show="homeTab" id="home-wrapper">
 			<h2>
 				Submit an image for conversion here
 			</h2>
-
 			<div id="dropIt"></div>
 			<form action="upload.php"
 				class="dropzone"
 				id="my-awesome-dropzone">
 			</form>
-		<div>
+        </div>
+        
+        <div ng-show="view3dTab" id="view3d-wrapper">
+            
+           <!-- <img src="dim3nsion.png" width="280" height="70"> -->
+            <!-- Trigger/Open The Modal -->
+        <button id="myBtn">Begin 3D Render</button>
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+
+          <!-- Modal content -->
+          <div class="modal-content">
+            <span class="close">×</span>
+              <h2>File Chooser</h2>
+            <p>IN PROGRESS. Must make sure file is correct format, and display error if not</p>
+              
+              
+
+                <input type="file" id="myFile">
+          </div>
+
+        
+        
+            <script>
+                // Get the modal
+                var modal = document.getElementById('myModal');
+
+                // Get the button that opens the modal
+                var btn = document.getElementById("myBtn");
+
+                // Get the <span> element that closes the modal
+                var span = document.getElementsByClassName("close")[0];
+
+                // When the user clicks the button, open the modal
+                btn.onclick = function() {
+                    modal.style.display = "block";
+                }
+
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            </script>
+
+            <script>
+
+                var container;
+
+                var camera, scene, renderer;
+
+                var mouseX = 0, mouseY = 0;
+
+                var windowHalfX = window.innerWidth / 2;
+                var windowHalfY = window.innerHeight / 2;
+
+
+                init();
+                animate();
+
+
+                function init() {
+
+                    //$("#view3d-wrapper");/
+                    container = document.createElement( 'div' );
+                    $("#view3d-wrapper").append( container );
+
+                    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+                    camera.position.z = 250;
+
+
+
+
+                    // scene
+
+                    scene = new THREE.Scene();
+
+                    var ambient = new THREE.AmbientLight( 0x101030 );
+                    scene.add( ambient );
+
+                    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+                    directionalLight.position.set( 0, 0, 1 );
+                    scene.add( directionalLight );
+
+
+                    directionalLight = new THREE.DirectionalLight();
+                    directionalLight.position.set( - 0.3, 0.6, - 0.8 ).normalize( 0xb8b8b8 );
+                    directionalLight.intensity = 1;
+                    scene.add( directionalLight );
+
+                    // texture
+
+                    var manager = new THREE.LoadingManager();
+                    manager.onProgress = function ( item, loaded, total ) {
+
+                        console.log( item, loaded, total );
+
+                    };
+
+                    var texture = new THREE.Texture();
+
+                    var onProgress = function ( xhr ) {
+                        if ( xhr.lengthComputable ) {
+                            var percentComplete = xhr.loaded / xhr.total * 100;
+                            console.log( Math.round(percentComplete, 2) + '% downloaded' );
+                        }
+                    };
+
+                    var onError = function ( xhr ) {
+                    };
+
+
+                    var loader = new THREE.ImageLoader( manager );
+                    loader.load( '/file_system/images/bluemarble.jpg', function ( image ) {
+
+                        texture.image = image;
+                        texture.needsUpdate = true;
+
+                    } );
+
+                    // model
+
+                    var loader = new THREE.OBJLoader( manager );
+                    loader.load( '/file_system/models/trex.obj', function ( object ) {
+
+                        object.traverse( function ( child ) {
+
+                            if ( child instanceof THREE.Mesh ) {
+
+                                child.material.map = texture;
+
+                            }
+
+                        } );
+
+                        object.position.y = - 95;
+                        object.scale.set(.35,.35,.35)
+                        scene.add( object );
+
+                    }, onProgress, onError );
+
+                    //
+
+                    renderer = new THREE.WebGLRenderer();
+                    renderer.setClearColor( 0xd5daec );
+                    renderer.setPixelRatio( window.devicePixelRatio );
+                    renderer.setSize( window.innerWidth, window.innerHeight );
+                    orbit = new THREE.OrbitControls( camera, container );
+                    orbit.addEventListener( 'change', render );
+
+                    container.appendChild( renderer.domElement );
+
+                    document.addEventListener( 'mousemove', onDocumentMouseMove, true );
+
+
+
+
+
+                    //
+
+                    window.addEventListener( 'resize', onWindowResize, true );
+
+                }
+
+                function onWindowResize() {
+
+                    windowHalfX = window.innerWidth / 2;
+                    windowHalfY = window.innerHeight / 2;
+
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+
+                    renderer.setSize( window.innerWidth, window.innerHeight );
+
+                }
+
+                function onDocumentMouseMove( event ) {
+
+                    mouseX = ( event.clientX - windowHalfX ) / 2;
+                    mouseY = ( event.clientY - windowHalfY ) / 2;
+
+                }
+
+                //
+
+                function animate() {
+
+                    requestAnimationFrame( animate );
+                    render();
+
+                }
+
+                function render() {
+
+                    //object.position.set( 0, 0, 0);
+                    camera.lookAt( scene.position );
+
+                    renderer.render( scene, camera );
+                    //stats.update();
+
+                }
+
+            </script> 
+            </div>
+        </div>
   </div>
+            
+            
 </body>
 
 </html>
