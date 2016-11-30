@@ -23,7 +23,73 @@
 	<link href="dropzone.css" type="text/css" rel="stylesheet" />
 	
 	<script src="main.js"></script>
+    
+    <script src="/library/code_3d/build/three.js"></script>
+    <script src="/library/code_3d/examples/js/loaders/OBJLoader.js"></script>
+    <script src='/library/code_3d/examples/js/controls/OrbitControls.js'></script>
   
+    <style>
+			body {
+				font-family: Monospace;
+				background-color: #d5daec;
+				color: #61443e;
+				margin: 0px;
+				overflow: hidden;
+			}
+            
+            #viewport {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+			}
+            
+            /* The Modal (background) */
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1; /* Sit on top */
+                padding-top: 100px; /* Location of the box */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgb(0,0,0); /* Fallback color */
+                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+
+            /* Modal Content */
+            .modal-content {
+                background-color: #fefefe;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+            }
+
+            /* The Close Button */
+            .close {
+                color: #aaaaaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            
+            /*button properties*/
+            button{
+                margin:auto;
+                display:block;
+            }
+			
+		</style>
+    
 </head>
 
 <body ng-app="dim3nsion">
@@ -36,26 +102,339 @@
 		  <h3 class="pull-left"><b>DIM3NSION</b></h3>
 		  <div class="pull-right">
 			<ul class="nav nav-pills pull-right">
-				<li role="presentation" class="active" id="home"><a href="#">Home</a></li>
-				<li role="presentation" id="contact"><a href="#">Contact</a></li>
-				<li role="presentation" id="about"><a href="#">About</a></li>
-				<li role="presentation" id="administration"><a href="#">Administration</a></li>
+				<li role="presentation" class="active" id="home" ng-click="navigation('home')"><a href="#">Home</a></li>
+				<li role="presentation" id="contact"><a href="#" ng-click="navigation('contact')">Contact</a></li>
+				<li role="presentation" id="about"><a href="#" ng-click="navigation('about')">About</a></li>
+                <li role="presentation" id="view3d" ng-click="navigation('view3d')"><a href="#">View 3d Model</a></li>
+				<li role="presentation" id="administration" ng-click="navigation('admin')"><a href="#">Administration</a></li>
+                <li role="presentation" id="login" ng-click="navigation('login')"><a href="#">{{user}}</a></li>
 			</ul>
 		  </div>
 		</nav>
 
-		<div>
-			<h2>
-				Submit an image for conversion here
-			</h2>
+		<div ng-show="homeTab" id="home-wrapper">
+			
+			<div ng-hide="loginStatus">
+				<h2>
+					Please log in to convert images!
+				</h2>
+			</div>
+		
+			<div ng-show="loginStatus">
+				<h2>
+					Submit an image for conversion here
+				</h2>
+				<div id="dropIt"></div>
+				<form action="upload.php"
+					class="dropzone"
+					id="my-awesome-dropzone">
+				</form>
+			</div>
+			
+			<!--<button class="btn btn-default" ng-click="testSession()">Test session</button>-->
+        </div>
+		
+		<div ng-show="contactTab" id="contact-wrapper">
+			<h3>
+				This is experimental technology - please contact us if you have specific questions about the technology itself.
+			</h3>
+			<h4>
+				Contact us at 2001ACO@gmail.com
+			</h4>
+		</div>
+		
+		<div ng-show="aboutTab" id="about-wrapper">
+			<h3>
+				Developed by 2001: A Capstone Odyssey.
+			</h3>
+			<h4>
+				Developed for University of Missouri's Computer Science Capstone 2 Course.
+			</h4>
+		</div>
 
-			<div id="dropIt"></div>
-			<form action="upload.php"
-				class="dropzone"
-				id="my-awesome-dropzone">
-			</form>
-		<div>
+		<div ng-show="adminTab" id="admin-wrapper">
+			<h2>
+				Potential admin interface
+			</h2>
+		</div>
+		
+		<div ng-show="loginTab" id="login-wrapper">
+
+			<div ng-hide="loginStatus">
+				<h2>
+					Enter your email to login!
+				</h2>
+				<h4 ng-show="loginFail">Username did not match any existing user.</h4>
+				<div class="form-group">
+				  <label for="usr">Username:</label>
+				  <input type="text" class="form-control" id="usr" ng-model="username">
+				</div>
+				<button id="login-button" class="btn btn-default" ng-click="authenticate(username)">Login</button>
+			</div>
+			<div ng-show="loginStatus">
+				<h4>Welcome {{user}}</h4>
+			</div>
+			
+		</div>
+        
+        <div ng-show="view3dTab" id="view3d-wrapper">
+            
+           <!-- <img src="dim3nsion.png" width="280" height="70"> -->
+            <!-- Trigger/Open The Modal -->
+<!--         <button id="myBtn">Begin 3D Render</button> -->
+		
+		<button ng-click="getUserModels()" class="btn btn-primary pull-left">Refresh Model List</button>
+<!-- 		<button ng-click="download(active)" class="btn btn-warning">Download</button> -->
+		<div ng-show="activeModelBool" class="pull-right"><button class="btn btn-warning"><a href={{active}} download>Download</a></button></div>
+		<div class="dropdown pull-left">
+		  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">List of Available Models
+		  <span class="caret"></span></button>
+		  <ul class="dropdown-menu" id="dropdown-menu">
+			<!--<li ng-repeat="model in model_list" ng-click="getUserModels()" class="user_name"><a href="#">{{model}}</a></li>-->
+			<li ng-repeat="model in model_list" ng-click="setActive(model)" onClick="displayModel(this);" id="{{model}}" class="user_name"><a href="#">{{model}}</a></li>
+		  </ul>
+		</div>
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+
+          <!-- Modal content -->
+          <div class="modal-content">
+            <span class="close">×</span>
+              <h2>File Chooser</h2>
+            <p>IN PROGRESS. Must make sure file is correct format, and display error if not</p>
+              
+              
+
+                <input type="file" id="myFile">
+          </div>
+
+        
+        
+            <script>
+                // Get the modal
+                var modal = document.getElementById('myModal');
+
+                // Get the button that opens the modal
+                //var btn = document.getElementById("myBtn");
+
+                // Get the <span> element that closes the modal
+                var span = document.getElementsByClassName("close")[0];
+
+                // When the user clicks the button, open the modal
+                /*btn.onclick = function() {
+                    modal.style.display = "block";
+                }*/
+
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            </script>
+
+            <script>
+
+                var container;
+
+                var camera, scene, renderer, objCopy, id;
+
+                var mouseX = 0, mouseY = 0;
+
+                var windowHalfX = window.innerWidth / 2;
+                var windowHalfY = window.innerHeight / 2;
+
+
+                //init("nothing");
+                //animate();
+				
+				function displayModel(event){
+					if(container){
+						cancelAnimationFrame(id);// Stop the animation
+						renderer.domElement.addEventListener('dblclick', null, false);
+						scene = null;
+						camera = null;
+						empty(container);
+					}
+					
+					
+					console.log(event.id);
+					init(parse(event.id));
+					animate();
+				}
+				
+                function init(objectPath) {
+
+                    //$("#view3d-wrapper");/
+                    container = document.createElement( 'div' );
+                    $("#view3d-wrapper").append( container );
+
+                    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+                    camera.position.z = 250;
+
+
+
+
+                    // scene
+
+                    scene = new THREE.Scene();
+
+                    var ambient = new THREE.AmbientLight( 0x101030 );
+                    scene.add( ambient );
+
+                    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+                    directionalLight.position.set( 0, 0, 1 );
+                    scene.add( directionalLight );
+
+
+                    directionalLight = new THREE.DirectionalLight();
+                    directionalLight.position.set( - 0.3, 0.6, - 0.8 ).normalize( 0xb8b8b8 );
+                    directionalLight.intensity = 1;
+                    scene.add( directionalLight );
+
+                    // texture
+
+                    var manager = new THREE.LoadingManager();
+                    manager.onProgress = function ( item, loaded, total ) {
+
+                        console.log( item, loaded, total );
+
+                    };
+
+                    var texture = new THREE.Texture();
+
+                    var onProgress = function ( xhr ) {
+                        if ( xhr.lengthComputable ) {
+                            var percentComplete = xhr.loaded / xhr.total * 100;
+                            console.log( Math.round(percentComplete, 2) + '% downloaded' );
+                        }
+                    };
+
+                    var onError = function ( xhr ) {
+                    };
+
+
+                    var loader = new THREE.ImageLoader( manager );
+                    loader.load( '/file_system/images/bluemarble.jpg', function ( image ) {
+
+                        texture.image = image;
+                        texture.needsUpdate = true;
+
+                    } );
+
+                    // model
+
+                    var loader = new THREE.OBJLoader( manager );
+                    //loader.load( '/file_system/models/trex.obj', function ( object ) {
+
+					loader.load( objectPath, function ( object ) {
+					
+						objCopy = object;
+					
+                        object.traverse( function ( child ) {
+
+                            if ( child instanceof THREE.Mesh ) {
+
+                                child.material.map = texture;
+
+                            }
+
+                        } );
+
+                        object.position.y = -60;
+                        object.scale.set(.35,.35,.35)
+                        scene.add( object );
+
+                    }, onProgress, onError );
+
+                    //
+
+                    renderer = new THREE.WebGLRenderer();
+                    renderer.setClearColor( 0xd5daec );
+                    renderer.setPixelRatio( window.devicePixelRatio );
+                    renderer.setSize( window.innerWidth / 1.2, window.innerHeight / 1.2 );
+                    orbit = new THREE.OrbitControls( camera, container );
+                    orbit.addEventListener( 'change', render );
+
+                    container.appendChild( renderer.domElement );
+
+                    document.addEventListener( 'mousemove', onDocumentMouseMove, true );
+
+
+
+
+
+                    //
+
+                    window.addEventListener( 'resize', onWindowResize, true );
+
+                }
+
+                function onWindowResize() {
+
+                    windowHalfX = window.innerWidth / 2;
+                    windowHalfY = window.innerHeight / 2;
+
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+
+                    renderer.setSize( window.innerWidth, window.innerHeight );
+
+                }
+
+                function onDocumentMouseMove( event ) {
+
+                    mouseX = 0;//( event.clientX - windowHalfX ) / 2;
+                    mouseY = 0;//( event.clientY - windowHalfY ) / 2;
+
+                }
+
+                //
+
+                function animate() {
+
+                    id = requestAnimationFrame( animate );
+                    render();
+
+                }
+
+                function render() {
+
+                    //object.position.set( 0, 0, 0);
+                    camera.lookAt( scene.position );
+
+                    renderer.render( scene, camera );
+                    //stats.update();
+
+                }
+				
+				function parse(path){
+				
+					var parsed = path.split("/");
+					var length = parsed.length;
+					var last = parsed[length - 1];
+					var parsed2 = "/file_system/models/" + last;
+					console.log(parsed2);
+				
+					return parsed2;
+				}
+				
+				function empty(elem) {
+					while (elem.lastChild) elem.removeChild(elem.lastChild);
+				}
+
+            </script> 
+            </div>
+        </div>
   </div>
+            
+            
 </body>
 
 </html>
